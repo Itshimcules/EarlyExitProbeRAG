@@ -4,6 +4,7 @@ import time
 from pathlib import Path
 
 from backends.base import ModelBackend
+from backends.gemma4_turboquant_backend import Gemma4TurboQuantBackend
 from backends.hf_probe_backend import HuggingFaceProbeAwareBackend
 from backends.llama_cpp_backend import LlamaCppBackend
 from backends.mock_backend import MockBackend
@@ -208,12 +209,25 @@ def create_default_harness() -> LocalHarness:
             probe_threshold=float(os.getenv("HF_PROBE_THRESHOLD", "0.72")),
             probe_weights_path=os.getenv("HF_PROBE_WEIGHTS_PATH") or None,
         )
+    elif backend_name in {"gemma4", "gemma4_turboquant", "gemma4-turboquant"}:
+        backend = Gemma4TurboQuantBackend(
+            model=os.getenv("GEMMA4_MODEL", "google/gemma-4-E2B-it"),
+            device=os.getenv("GEMMA4_DEVICE", os.getenv("HF_PROBE_DEVICE", "auto")),
+            torch_dtype=os.getenv("GEMMA4_TORCH_DTYPE", os.getenv("HF_PROBE_TORCH_DTYPE", "auto")),
+            max_new_tokens=int(os.getenv("GEMMA4_MAX_NEW_TOKENS", "128")),
+            temperature=float(os.getenv("GEMMA4_TEMPERATURE", "0.2")),
+            probe_layer=int(os.getenv("HF_PROBE_LAYER", "-1")),
+            probe_threshold=float(os.getenv("HF_PROBE_THRESHOLD", "0.72")),
+            probe_weights_path=os.getenv("HF_PROBE_WEIGHTS_PATH") or None,
+            use_turboquant=os.getenv("TURBOQUANT_ENABLED", "false").lower() == "true",
+            turboquant_bits=int(os.getenv("TURBOQUANT_BITS", "4")),
+        )
     elif backend_name == "mock":
         backend = MockBackend()
     else:
         raise ValueError(
             f"Unsupported MODEL_BACKEND '{backend_name}'. Use 'mock', 'ollama', "
-            "'llama_cpp', 'openai_compatible', or 'hf_probe'."
+            "'llama_cpp', 'openai_compatible', 'hf_probe', or 'gemma4_turboquant'."
         )
 
     if retrieval_mode == "keyword":

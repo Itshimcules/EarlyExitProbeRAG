@@ -1,10 +1,12 @@
 import json
+import importlib.util
 from pathlib import Path
 
 import httpx
 import pytest
 
 from backends.hf_probe_backend import HuggingFaceProbeAwareBackend
+from backends.gemma4_turboquant_backend import Gemma4TurboQuantBackend
 from backends.llama_cpp_backend import LlamaCppBackend
 from backends.openai_compatible_backend import OpenAICompatibleBackend
 from harness.local_harness import create_default_harness
@@ -47,6 +49,15 @@ def test_hf_probe_math_without_loading_transformers():
     assert backend._normalize_layer_index(-1, 4) == 3
     confidence = backend._score_linear_probe([1.0, 1.0], {"weights": [2.0, 2.0], "bias": 0})
     assert confidence > 0.98
+
+
+def test_gemma4_turboquant_backend_reports_missing_turboquant():
+    if importlib.util.find_spec("turboquant") is not None:
+        pytest.skip("turboquant is installed in this environment")
+    backend = Gemma4TurboQuantBackend(use_turboquant=True)
+
+    with pytest.raises(RuntimeError, match="turboquant"):
+        backend._create_turboquant_cache()
 
 
 def test_factory_wires_vector_retrieval_and_openai_backend(monkeypatch, tmp_path):

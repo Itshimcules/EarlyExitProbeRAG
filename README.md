@@ -157,6 +157,7 @@ MODEL_BACKEND=mock uvicorn app.main:app --reload
 MODEL_BACKEND=ollama OLLAMA_MODEL=llama3.1:8b uvicorn app.main:app --reload
 MODEL_BACKEND=llama_cpp LLAMA_CPP_MODEL_PATH=/models/local.gguf uvicorn app.main:app --reload
 MODEL_BACKEND=openai_compatible OPENAI_COMPAT_BASE_URL=http://localhost:1234/v1 uvicorn app.main:app --reload
+MODEL_BACKEND=gemma4_turboquant GEMMA4_MODEL=google/gemma-4-E2B-it TURBOQUANT_ENABLED=true uvicorn app.main:app --reload
 ```
 
 `mock` is the default so the showcase runs without pulling a model. Heavy local runtimes are optional extras:
@@ -164,6 +165,7 @@ MODEL_BACKEND=openai_compatible OPENAI_COMPAT_BASE_URL=http://localhost:1234/v1 
 ```bash
 pip install '.[llama-cpp]'
 pip install '.[hf-probe]'
+pip install '.[turboquant]'
 ```
 
 `LlamaCppBackend` expects a local GGUF model file. `OpenAICompatibleBackend` expects a local or private gateway with `/v1/chat/completions`.
@@ -285,6 +287,31 @@ python experiments/run_benchmark_fixture.py --repeats 5 --retrieval-mode vector
 python experiments/run_benchmark_fixture.py --repeats 5 --retrieval-mode chroma
 ```
 
+Run the Gemma 4 TurboQuant/probe benchmark:
+
+```bash
+python experiments/benchmark_gemma4_turboquant_probe.py --mode auto
+```
+
+## Gemma 4 TurboQuant Benchmark Findings
+
+The Gemma 4 benchmark target is `google/gemma-4-E2B-it`. The current checked-in benchmark artifact was run in `dry_run` mode because this local Codex machine has 8 GB RAM, no NVIDIA GPU, and did not have the optional `torch`, `transformers`, and `turboquant` packages installed during the run. The integration path is real, but the numbers below are environment-labeled dry-run estimates, not measured Gemma 4 E2B runtime latencies.
+
+| Configuration | Avg latency ms | Debug tokens avoided | Estimated peak memory MB | Skipped generations |
+| --- | ---: | ---: | ---: | ---: |
+| `baseline` | 3518 | 0 | 11815 | 0 |
+| `turboquant` | 3167 | 0 | 8507 | 0 |
+| `probe` | 2202 | 42 | 11815 | 3 |
+| `turboquant_probe` | 1986 | 42 | 8507 | 3 |
+
+Findings:
+
+- Probe routing produced the biggest modeled latency reduction because confident `/debug` requests can skip free-form generation.
+- TurboQuant is integrated as an optional Gemma 4 KV-cache compression path using `TurboQuantCache(bits=4)`.
+- The combined TurboQuant plus probe path had the best dry-run profile, but real validation requires accelerator memory and `--mode real`.
+
+See `docs/gemma4_turboquant_probe_findings.md` and `experiments/gemma4_turboquant_probe_results.csv`.
+
 ## Experimental Early-Exit Probing
 
 This repo includes experimental scaffolding and notes for detecting tool-call intent before full generation completes. The goal is to measure whether early routing can reduce unnecessary output tokens and latency in local agent workflows.
@@ -360,6 +387,7 @@ See `docs/vllm_gateway_config.md` for details.
 - Chroma vector database adapter behind the same retrieval interface.
 - vLLM-specific backend configuration example.
 - Expanded synthetic technician corpus for stress testing.
+- Gemma 4 TurboQuant inference adapter and benchmark artifact.
 
 ## Next Roadmap
 
@@ -367,3 +395,4 @@ See `docs/vllm_gateway_config.md` for details.
 - Add a production embedding model path for Chroma.
 - Add retrieval-quality metrics beyond route accuracy.
 - Add a minimal web UI for live technician workflow demos.
+- Re-run Gemma 4 TurboQuant benchmarks on an accelerator with enough memory for real inference.
