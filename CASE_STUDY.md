@@ -31,7 +31,7 @@ MCP wiki server = access layer
 Vector DB = semantic search / memory layer
 ```
 
-For v1, the project uses local markdown wiki docs and keyword search. The MCP-style wrapper exposes the wiki tools cleanly. The optional vector search module is present as a future enhancement path.
+The project uses local markdown wiki docs, keyword search, and a persistent dependency-free vector index. The MCP-style wrapper exposes the wiki tools cleanly, while the vector index gives repeated benchmark runs a reusable retrieval path.
 
 ## Design Choice: Backend-Agnostic Model Calls
 
@@ -41,13 +41,16 @@ That allows the stable app to run with:
 
 - `MockBackend` for tests, CI, and no-model demos.
 - `OllamaBackend` for local model demos.
-- future llama.cpp, vLLM, or OpenAI-compatible local backends.
+- `LlamaCppBackend` for GGUF models through llama.cpp.
+- `OpenAICompatibleBackend` for local gateways.
+- `HuggingFaceProbeAwareBackend` for hidden-state probe experiments.
+- future vLLM-specific backends.
 
 ## Research Track
 
 The early-exit probe idea is intentionally isolated under `experiments/`. It is not part of the stable routing contract.
 
-The research question is whether hidden-state probing can detect tool-call intent early enough to avoid generating unnecessary tokens. The scaffold tracks the metrics needed for that work without claiming that the probe has been implemented.
+The research question is whether hidden-state probing can detect tool-call intent early enough to avoid generating unnecessary tokens. The Hugging Face backend can expose selected hidden-state layers, but the project still treats useful probe classification as experimental and dependent on trained weights plus validation.
 
 ## What This Proves
 
@@ -60,4 +63,3 @@ This repository shows how to build internal AI tooling for operations and techni
 - local-first deployment path
 - benchmark instrumentation
 - credible separation between production behavior and research scaffolding
-

@@ -4,18 +4,23 @@ import time
 from pathlib import Path
 
 from backends.base import ModelBackend
+from backends.hf_probe_backend import HuggingFaceProbeAwareBackend
+from backends.llama_cpp_backend import LlamaCppBackend
 from backends.mock_backend import MockBackend
 from backends.ollama_backend import OllamaBackend
+from backends.openai_compatible_backend import OpenAICompatibleBackend
 from harness.benchmarks import BenchmarkLogger, BenchmarkRecord
 from harness.command_router import CommandType, parse_command
 from harness.prompts import build_ask_prompt, build_debug_prompt
 from harness.response_types import AskResponse, DebugResponse
 from retrieval.keyword_search import KeywordWikiSearch, SearchResult
+from retrieval.vector_search import PersistentVectorWikiSearch
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_WIKI_PATH = PROJECT_ROOT / "mcp_servers" / "fake_wiki_docs"
 DEFAULT_RESULTS_PATH = PROJECT_ROOT / "experiments" / "results.csv"
+DEFAULT_VECTOR_INDEX_PATH = PROJECT_ROOT / ".cache" / "wiki-vector-index.json"
 
 
 class LocalHarness:
@@ -162,19 +167,65 @@ class LocalHarness:
 def create_default_harness() -> LocalHarness:
     docs_path = Path(os.getenv("WIKI_DOCS_PATH", DEFAULT_WIKI_PATH))
     backend_name = os.getenv("MODEL_BACKEND", "mock").strip().lower()
+    retrieval_mode = os.getenv("RETRIEVAL_MODE", "keyword").strip().lower()
 
     if backend_name == "ollama":
         backend: ModelBackend = OllamaBackend(
             model=os.getenv("OLLAMA_MODEL", "llama3.1:8b"),
             base_url=os.getenv("OLLAMA_BASE_URL", "http://localhost:11434"),
         )
+    elif backend_name in {"llama_cpp", "llamacpp"}:
+        backend = LlamaCppBackend(
+            model_path=os.getenv("LLAMA_CPP_MODEL_PATH", ""),
+            n_ctx=int(os.getenv("LLAMA_CPP_N_CTX", "4096")),
+            n_threads=(
+                int(os.getenv("LLAMA_CPP_N_THREADS"))
+                if os.getenv("LLAMA_CPP_N_THREADS")
+                else None
+            ),
+            n_gpu_layers=int(os.getenv("LLAMA_CPP_N_GPU_LAYERS", "0")),
+            temperature=float(os.getenv("LLAMA_CPP_TEMPERATURE", "0.2")),
+            max_tokens=int(os.getenv("LLAMA_CPP_MAX_TOKENS", "512")),
+        )
+    elif backend_name in {"openai", "openai_compatible", "openai-compatible"}:
+        backend = OpenAICompatibleBackend(
+            model=os.getenv("OPENAI_COMPAT_MODEL", "local-model"),
+            base_url=os.getenv("OPENAI_COMPAT_BASE_URL", "http://localhost:1234/v1"),
+            api_key=os.getenv("OPENAI_COMPAT_API_KEY") or None,
+            temperature=float(os.getenv("OPENAI_COMPAT_TEMPERATURE", "0.2")),
+            max_tokens=int(os.getenv("OPENAI_COMPAT_MAX_TOKENS", "512")),
+        )
+    elif backend_name in {"hf_probe", "huggingface_probe", "huggingface-probe"}:
+        backend = HuggingFaceProbeAwareBackend(
+            model=os.getenv("HF_PROBE_MODEL", "distilgpt2"),
+            device=os.getenv("HF_PROBE_DEVICE", "auto"),
+            torch_dtype=os.getenv("HF_PROBE_TORCH_DTYPE", "auto"),
+            max_new_tokens=int(os.getenv("HF_PROBE_MAX_NEW_TOKENS", "256")),
+            temperature=float(os.getenv("HF_PROBE_TEMPERATURE", "0.2")),
+            probe_layer=int(os.getenv("HF_PROBE_LAYER", "-1")),
+            probe_threshold=float(os.getenv("HF_PROBE_THRESHOLD", "0.72")),
+            probe_weights_path=os.getenv("HF_PROBE_WEIGHTS_PATH") or None,
+        )
     elif backend_name == "mock":
         backend = MockBackend()
     else:
-        raise ValueError(f"Unsupported MODEL_BACKEND '{backend_name}'. Use 'mock' or 'ollama'.")
+        raise ValueError(
+            f"Unsupported MODEL_BACKEND '{backend_name}'. Use 'mock', 'ollama', "
+            "'llama_cpp', 'openai_compatible', or 'hf_probe'."
+        )
+
+    if retrieval_mode == "keyword":
+        search = KeywordWikiSearch(docs_path)
+    elif retrieval_mode == "vector":
+        search = PersistentVectorWikiSearch(
+            docs_path=docs_path,
+            index_path=Path(os.getenv("VECTOR_INDEX_PATH", DEFAULT_VECTOR_INDEX_PATH)),
+        )
+    else:
+        raise ValueError("Unsupported RETRIEVAL_MODE. Use 'keyword' or 'vector'.")
 
     return LocalHarness(
         backend=backend,
-        search=KeywordWikiSearch(docs_path),
+        search=search,
         benchmark_logger=BenchmarkLogger(Path(os.getenv("RESULTS_PATH", DEFAULT_RESULTS_PATH))),
     )

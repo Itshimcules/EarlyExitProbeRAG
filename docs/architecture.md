@@ -7,7 +7,7 @@ flowchart TD
     A["User input"] --> B["FastAPI POST /api/command"]
     B --> C["Command router"]
     C --> D{Mode}
-    D -->|ask| E["Keyword wiki retrieval"]
+    D -->|ask| E["Keyword or persistent-vector wiki retrieval"]
     E --> F["Ask prompt"]
     F --> G["ModelBackend.generate"]
     G --> H["AskResponse with sources"]
@@ -49,9 +49,40 @@ classDiagram
         +base_url: str
         +generate(prompt: str) str
     }
+    class LlamaCppBackend {
+        +model_path: str
+        +generate(prompt: str) str
+    }
+    class OpenAICompatibleBackend {
+        +base_url: str
+        +generate(prompt: str) str
+    }
+    class ProbeAwareBackend {
+        <<interface>>
+        +inspect_hidden_states(prompt: str)
+        +probe_tool_intent(prompt: str)
+    }
+    class HuggingFaceProbeAwareBackend {
+        +model: str
+        +inspect_hidden_states(prompt: str)
+        +probe_tool_intent(prompt: str)
+    }
     ModelBackend <|-- MockBackend
     ModelBackend <|-- OllamaBackend
+    ModelBackend <|-- LlamaCppBackend
+    ModelBackend <|-- OpenAICompatibleBackend
+    ModelBackend <|-- ProbeAwareBackend
+    ProbeAwareBackend <|-- HuggingFaceProbeAwareBackend
 ```
+
+## Retrieval Abstraction
+
+The harness expects the retrieval layer to provide `search`, `get_page`, `page_ids`, and `related_page_ids`.
+
+- `KeywordWikiSearch` reparses markdown pages on startup.
+- `PersistentVectorWikiSearch` stores token-count vectors in a JSON index and reloads them across benchmark runs.
+
+The persistent index is deliberately simple and inspectable. It is suitable for synthetic corpora and benchmark fixtures, while leaving a clean path for a real vector database adapter.
 
 ## Stable vs Experimental
 
@@ -60,15 +91,14 @@ Stable:
 - FastAPI route
 - command router
 - keyword retrieval
+- persistent vector retrieval
 - synthetic wiki docs
-- mock and Ollama backends
+- mock, Ollama, llama.cpp, and OpenAI-compatible backends
 - MCP-style wiki tools
 - latency logging
+- repeated benchmark fixtures
 
 Experimental:
 
-- vector search replacement
-- hidden-state probing
-- probe-aware backend
+- hidden-state probing through `HuggingFaceProbeAwareBackend`
 - early tool-call exit benchmark comparison
-

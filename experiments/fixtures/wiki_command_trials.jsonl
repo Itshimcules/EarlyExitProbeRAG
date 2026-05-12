@@ -1,0 +1,6 @@
+{"id": "rag_gpu_tray", "trial_type": "rag", "input": "/ask GPU tray reseat boot failure", "expected_sources": ["wiki://gpu-tray-reseat", "wiki://psu-led-status"]}
+{"id": "rag_network_boot", "trial_type": "rag", "input": "/ask PXE network boot timeout on staging VLAN", "expected_sources": ["wiki://network-boot-failure"]}
+{"id": "debug_gpu_tray", "trial_type": "debug", "input": "/debug GPU tray reseat boot failure", "expected_url": "wiki://gpu-tray-reseat"}
+{"id": "debug_psu_led", "trial_type": "debug", "input": "/debug PSU amber power fault after service", "expected_url": "wiki://psu-led-status"}
+{"id": "debug_bmc_reset", "trial_type": "debug", "input": "/debug BMC sensor data stale after service", "expected_url": "wiki://bmc-reset-procedure"}
+{"id": "debug_memory_training", "trial_type": "debug", "input": "/debug memory training POST code after DIMM change", "expected_url": "wiki://memory-training-failure"}
