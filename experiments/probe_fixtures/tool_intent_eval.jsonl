@@ -1,0 +1,8 @@
+{"id": "eval_debug_gpu", "text": "/debug GPU tray reseat boot failure", "label": 1}
+{"id": "eval_debug_storage", "text": "find exact page_id for storage controller cache warning", "label": 1}
+{"id": "eval_debug_nvme", "text": "route to single troubleshooting page for NVMe bay missing", "label": 1}
+{"id": "eval_debug_thermal", "text": "/debug CPU thermal throttle warning and fan ramp", "label": 1}
+{"id": "eval_ask_gpu", "text": "/ask explain GPU tray reseat and PSU LED checks", "label": 0}
+{"id": "eval_ask_sources", "text": "summarize sources for network boot failure context", "label": 0}
+{"id": "eval_ask_raid", "text": "what does degraded RAID array mean during rebuild", "label": 0}
+{"id": "eval_ask_firmware", "text": "give me an overview of firmware rollback risks", "label": 0}

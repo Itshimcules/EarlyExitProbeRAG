@@ -13,6 +13,7 @@ from harness.benchmarks import BenchmarkLogger, BenchmarkRecord
 from harness.command_router import CommandType, parse_command
 from harness.prompts import build_ask_prompt, build_debug_prompt
 from harness.response_types import AskResponse, DebugResponse
+from retrieval.chroma_search import ChromaWikiSearch
 from retrieval.keyword_search import KeywordWikiSearch, SearchResult
 from retrieval.vector_search import PersistentVectorWikiSearch
 
@@ -21,6 +22,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_WIKI_PATH = PROJECT_ROOT / "mcp_servers" / "fake_wiki_docs"
 DEFAULT_RESULTS_PATH = PROJECT_ROOT / "experiments" / "results.csv"
 DEFAULT_VECTOR_INDEX_PATH = PROJECT_ROOT / ".cache" / "wiki-vector-index.json"
+DEFAULT_CHROMA_PATH = PROJECT_ROOT / ".cache" / "chroma"
 
 
 class LocalHarness:
@@ -221,8 +223,16 @@ def create_default_harness() -> LocalHarness:
             docs_path=docs_path,
             index_path=Path(os.getenv("VECTOR_INDEX_PATH", DEFAULT_VECTOR_INDEX_PATH)),
         )
+    elif retrieval_mode == "chroma":
+        search = ChromaWikiSearch(
+            docs_path=docs_path,
+            persist_path=Path(os.getenv("CHROMA_PERSIST_PATH", DEFAULT_CHROMA_PATH)),
+            collection_name=os.getenv("CHROMA_COLLECTION", "synthetic_technician_wiki"),
+            embedding_dimensions=int(os.getenv("CHROMA_EMBEDDING_DIMENSIONS", "384")),
+            rebuild=os.getenv("CHROMA_REBUILD", "false").lower() == "true",
+        )
     else:
-        raise ValueError("Unsupported RETRIEVAL_MODE. Use 'keyword' or 'vector'.")
+        raise ValueError("Unsupported RETRIEVAL_MODE. Use 'keyword', 'vector', or 'chroma'.")
 
     return LocalHarness(
         backend=backend,

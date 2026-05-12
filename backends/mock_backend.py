@@ -29,6 +29,18 @@ class MockBackend(ModelBackend):
             return "bmc-reset-procedure"
         if "memory" in query and "memory-training-failure" in candidate_ids:
             return "memory-training-failure"
+        if any(term in query for term in ["nvme", "drive", "bay"]) and "nvme-drive-missing" in candidate_ids:
+            return "nvme-drive-missing"
+        if any(term in query for term in ["raid", "array", "degraded", "rebuild"]) and "raid-degraded-array" in candidate_ids:
+            return "raid-degraded-array"
+        if any(term in query for term in ["thermal", "throttle", "cpu"]) and "cpu-thermal-throttle" in candidate_ids:
+            return "cpu-thermal-throttle"
+        if any(term in query for term in ["fan", "cooling", "tachometer"]) and "fan-speed-alert" in candidate_ids:
+            return "fan-speed-alert"
+        if any(term in query for term in ["firmware", "rollback", "update"]) and "firmware-update-rollback" in candidate_ids:
+            return "firmware-update-rollback"
+        if any(term in query for term in ["cache", "controller"]) and "storage-controller-cache" in candidate_ids:
+            return "storage-controller-cache"
 
         return candidate_ids[0] if candidate_ids else ""
 

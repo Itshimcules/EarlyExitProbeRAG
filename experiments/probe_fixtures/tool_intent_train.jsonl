@@ -1,0 +1,12 @@
+{"id": "train_debug_gpu", "text": "/debug GPU tray reseat boot failure", "label": 1}
+{"id": "train_debug_psu", "text": "/debug PSU amber power fault exact troubleshooting page", "label": 1}
+{"id": "train_debug_raid", "text": "find the single SOP page for RAID degraded rebuild", "label": 1}
+{"id": "train_debug_fan", "text": "route to troubleshooting page for fan tachometer alert", "label": 1}
+{"id": "train_debug_firmware", "text": "open exact wiki page for firmware rollback", "label": 1}
+{"id": "train_debug_cpu", "text": "/debug CPU thermal throttle warning", "label": 1}
+{"id": "train_ask_gpu", "text": "/ask explain GPU tray reseat checks and cite sources", "label": 0}
+{"id": "train_ask_psu", "text": "what does amber PSU LED mean", "label": 0}
+{"id": "train_ask_bmc", "text": "summarize BMC reset context and sources", "label": 0}
+{"id": "train_ask_network", "text": "how should I think about PXE network boot failure", "label": 0}
+{"id": "train_ask_memory", "text": "give me an overview of memory training symptoms", "label": 0}
+{"id": "train_ask_storage", "text": "/ask answer with context for NVMe drive missing", "label": 0}

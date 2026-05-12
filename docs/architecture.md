@@ -81,8 +81,9 @@ The harness expects the retrieval layer to provide `search`, `get_page`, `page_i
 
 - `KeywordWikiSearch` reparses markdown pages on startup.
 - `PersistentVectorWikiSearch` stores token-count vectors in a JSON index and reloads them across benchmark runs.
+- `ChromaWikiSearch` uses a real Chroma persistent vector database with a deterministic local hashing embedding function.
 
-The persistent index is deliberately simple and inspectable. It is suitable for synthetic corpora and benchmark fixtures, while leaving a clean path for a real vector database adapter.
+The persistent JSON index is deliberately simple and inspectable. The Chroma adapter exercises the real vector database boundary while staying optional through the `vector-db` extra.
 
 ## Stable vs Experimental
 
@@ -92,11 +93,13 @@ Stable:
 - command router
 - keyword retrieval
 - persistent vector retrieval
+- Chroma vector database retrieval
 - synthetic wiki docs
 - mock, Ollama, llama.cpp, and OpenAI-compatible backends
 - MCP-style wiki tools
 - latency logging
 - repeated benchmark fixtures
+- trained synthetic probe fixture and report
 
 Experimental:
 

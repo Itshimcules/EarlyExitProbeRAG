@@ -4,3 +4,10 @@
 {"id": "debug_psu_led", "trial_type": "debug", "input": "/debug PSU amber power fault after service", "expected_url": "wiki://psu-led-status"}
 {"id": "debug_bmc_reset", "trial_type": "debug", "input": "/debug BMC sensor data stale after service", "expected_url": "wiki://bmc-reset-procedure"}
 {"id": "debug_memory_training", "trial_type": "debug", "input": "/debug memory training POST code after DIMM change", "expected_url": "wiki://memory-training-failure"}
+{"id": "rag_nvme_missing", "trial_type": "rag", "input": "/ask NVMe drive missing from firmware inventory after service", "expected_sources": ["wiki://nvme-drive-missing", "wiki://storage-controller-cache"]}
+{"id": "rag_fan_thermal", "trial_type": "rag", "input": "/ask fans high speed and CPU thermal throttle event", "expected_sources": ["wiki://fan-speed-alert", "wiki://cpu-thermal-throttle"]}
+{"id": "debug_nvme_missing", "trial_type": "debug", "input": "/debug NVMe drive missing from bay inventory", "expected_url": "wiki://nvme-drive-missing"}
+{"id": "debug_raid_degraded", "trial_type": "debug", "input": "/debug RAID degraded array rebuild stalled", "expected_url": "wiki://raid-degraded-array"}
+{"id": "debug_fan_alert", "trial_type": "debug", "input": "/debug fan tachometer speed alert after chassis service", "expected_url": "wiki://fan-speed-alert"}
+{"id": "debug_cpu_thermal", "trial_type": "debug", "input": "/debug CPU thermal throttle warning and fans ramp", "expected_url": "wiki://cpu-thermal-throttle"}
+{"id": "debug_firmware_rollback", "trial_type": "debug", "input": "/debug firmware update rollback after boot inventory issue", "expected_url": "wiki://firmware-update-rollback"}

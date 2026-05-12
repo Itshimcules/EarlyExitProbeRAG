@@ -12,6 +12,7 @@ if str(PROJECT_ROOT) not in sys.path:
 from backends.mock_backend import MockBackend
 from harness.benchmarks import BenchmarkLogger, BenchmarkRecord
 from harness.local_harness import DEFAULT_RESULTS_PATH, DEFAULT_VECTOR_INDEX_PATH, LocalHarness
+from retrieval.chroma_search import ChromaWikiSearch
 from retrieval.keyword_search import KeywordWikiSearch
 from retrieval.vector_search import PersistentVectorWikiSearch
 
@@ -32,12 +33,19 @@ def load_trials(path: Path) -> list[dict]:
     return trials
 
 
-def build_search(retrieval_mode: str, docs_path: Path, vector_index_path: Path):
+def build_search(
+    retrieval_mode: str,
+    docs_path: Path,
+    vector_index_path: Path,
+    chroma_path: Path,
+):
     if retrieval_mode == "keyword":
         return KeywordWikiSearch(docs_path)
     if retrieval_mode == "vector":
         return PersistentVectorWikiSearch(docs_path, vector_index_path)
-    raise ValueError("retrieval_mode must be 'keyword' or 'vector'.")
+    if retrieval_mode == "chroma":
+        return ChromaWikiSearch(docs_path, chroma_path)
+    raise ValueError("retrieval_mode must be 'keyword', 'vector', or 'chroma'.")
 
 
 def check_trial(trial: dict, response) -> bool:
@@ -55,7 +63,12 @@ async def run_fixture(args) -> int:
     logger = BenchmarkLogger(args.results)
     harness = LocalHarness(
         backend=MockBackend(),
-        search=build_search(args.retrieval_mode, args.docs_path, args.vector_index_path),
+        search=build_search(
+            args.retrieval_mode,
+            args.docs_path,
+            args.vector_index_path,
+            args.chroma_path,
+        ),
         benchmark_logger=None,
     )
     passed = 0
@@ -101,8 +114,9 @@ def parse_args():
     parser.add_argument("--repeats", type=int, default=3)
     parser.add_argument("--results", type=Path, default=DEFAULT_RESULTS_PATH)
     parser.add_argument("--docs-path", type=Path, default=DEFAULT_DOCS_PATH)
-    parser.add_argument("--retrieval-mode", choices=["keyword", "vector"], default="keyword")
+    parser.add_argument("--retrieval-mode", choices=["keyword", "vector", "chroma"], default="keyword")
     parser.add_argument("--vector-index-path", type=Path, default=DEFAULT_VECTOR_INDEX_PATH)
+    parser.add_argument("--chroma-path", type=Path, default=PROJECT_ROOT / ".cache" / "chroma")
     return parser.parse_args()
 
 

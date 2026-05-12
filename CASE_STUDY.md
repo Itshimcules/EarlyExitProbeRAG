@@ -31,7 +31,7 @@ MCP wiki server = access layer
 Vector DB = semantic search / memory layer
 ```
 
-The project uses local markdown wiki docs, keyword search, and a persistent dependency-free vector index. The MCP-style wrapper exposes the wiki tools cleanly, while the vector index gives repeated benchmark runs a reusable retrieval path.
+The project uses local markdown wiki docs, keyword search, a persistent dependency-free vector index, and an optional Chroma vector database adapter. The MCP-style wrapper exposes the wiki tools cleanly, while the retrieval adapters give repeated benchmark runs reusable retrieval paths.
 
 ## Design Choice: Backend-Agnostic Model Calls
 
@@ -50,7 +50,7 @@ That allows the stable app to run with:
 
 The early-exit probe idea is intentionally isolated under `experiments/`. It is not part of the stable routing contract.
 
-The research question is whether hidden-state probing can detect tool-call intent early enough to avoid generating unnecessary tokens. The Hugging Face backend can expose selected hidden-state layers, but the project still treats useful probe classification as experimental and dependent on trained weights plus validation.
+The research question is whether hidden-state probing can detect tool-call intent early enough to avoid generating unnecessary tokens. The Hugging Face backend can expose selected hidden-state layers, and the synthetic trained-probe fixture validates evaluation plumbing. The project still treats useful hidden-state probe classification as experimental and dependent on trained activation weights plus validation.
 
 ## What This Proves
 

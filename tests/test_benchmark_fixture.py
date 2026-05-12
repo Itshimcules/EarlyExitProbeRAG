@@ -24,6 +24,6 @@ def test_benchmark_fixture_script_runs(tmp_path):
     )
 
     assert completed.returncode == 0, completed.stderr
-    assert "passed=6/6" in completed.stdout
+    assert "passed=13/13" in completed.stdout
     assert results_path.exists()
     assert "fixture_debug" in results_path.read_text(encoding="utf-8")

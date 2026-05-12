@@ -21,6 +21,12 @@ Each page includes:
 | `network-boot-failure` | Network Boot Failure Checklist | PXE and imaging failures |
 | `bmc-reset-procedure` | BMC Reset Procedure | Stale management-controller state |
 | `memory-training-failure` | Memory Training Failure Procedure | POST and DIMM training issues |
+| `nvme-drive-missing` | NVMe Drive Missing Checklist | Missing storage devices after service |
+| `storage-controller-cache` | Storage Controller Cache Status | Cache protection and stale storage state |
+| `raid-degraded-array` | RAID Degraded Array Procedure | Rebuild and degraded-array triage |
+| `fan-speed-alert` | Fan Speed Alert Triage | Fan tachometer and airflow alerts |
+| `cpu-thermal-throttle` | CPU Thermal Throttle Investigation | Thermal limiting and fan-ramp symptoms |
+| `firmware-update-rollback` | Firmware Update Rollback Plan | Controlled rollback after update symptoms |
 
 ## Style Rules
 
@@ -29,4 +35,3 @@ Each page includes:
 - Avoid real hardware serials, asset IDs, customer names, and URLs.
 - Avoid copying proprietary procedure language.
 - Prefer short troubleshooting pages that make retrieval behavior easy to inspect.
-

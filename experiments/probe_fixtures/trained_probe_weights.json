@@ -1,0 +1,25 @@
+{
+  "feature_names": [
+    "debug_command",
+    "ask_command",
+    "hardware_symptom",
+    "routing_language",
+    "question_language",
+    "source_language",
+    "exact_page_language",
+    "general_help_language"
+  ],
+  "weights": [
+    3.033758,
+    -0.542685,
+    0.286182,
+    4.268736,
+    -2.215655,
+    -0.420842,
+    1.963759,
+    -1.637648
+  ],
+  "bias": -2.196496,
+  "threshold": 0.72,
+  "training_note": "Synthetic text-feature logistic probe for evaluation plumbing; not a hidden-state classifier."
+}

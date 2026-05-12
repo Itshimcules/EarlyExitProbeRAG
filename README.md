@@ -76,9 +76,11 @@ App
 - Hugging Face probe-aware backend that can expose hidden states for early-exit experiments
 - Keyword search over synthetic markdown wiki pages
 - Persistent no-dependency vector index over synthetic markdown docs
+- Optional Chroma vector database adapter behind the same retrieval interface
 - MCP-style wiki server exposing `search_wiki` and `get_wiki_page`
 - Latency and benchmark CSV logging
 - Repeatable benchmark fixtures for RAG and debug-routing trials
+- Trained synthetic probe fixture with an evaluation report
 - Early-exit probe experiment scaffolding
 
 ## Command Modes
@@ -182,6 +184,17 @@ RETRIEVAL_MODE=vector VECTOR_INDEX_PATH=.cache/wiki-vector-index.json uvicorn ap
 
 The vector index is intentionally dependency-free. It is not a replacement for a production vector database, but it gives larger synthetic corpora a reusable retrieval path for benchmark runs.
 
+Chroma retrieval uses a real local vector database adapter:
+
+```bash
+pip install '.[vector-db]'
+RETRIEVAL_MODE=chroma CHROMA_PERSIST_PATH=.cache/chroma uvicorn app.main:app --reload
+```
+
+The Chroma adapter uses a deterministic local hashing embedding function by default so demos do not require network calls or embedding model downloads. Production deployments can replace that embedding function with a model-backed one.
+
+See `docs/vector_database_adapter.md` for adapter details.
+
 ## Synthetic Wiki Docs
 
 The demo wiki pages are in `mcp_servers/fake_wiki_docs/`:
@@ -191,6 +204,12 @@ The demo wiki pages are in `mcp_servers/fake_wiki_docs/`:
 - `network-boot-failure.md`
 - `bmc-reset-procedure.md`
 - `memory-training-failure.md`
+- `nvme-drive-missing.md`
+- `storage-controller-cache.md`
+- `raid-degraded-array.md`
+- `fan-speed-alert.md`
+- `cpu-thermal-throttle.md`
+- `firmware-update-rollback.md`
 
 They are deliberately fake technician-style documents. Do not replace them with real company wiki content, real SOPs, proprietary URLs, internal screenshots, or customer/server data.
 
@@ -263,6 +282,7 @@ Run repeated fixture trials:
 ```bash
 python experiments/run_benchmark_fixture.py --repeats 5 --retrieval-mode keyword
 python experiments/run_benchmark_fixture.py --repeats 5 --retrieval-mode vector
+python experiments/run_benchmark_fixture.py --repeats 5 --retrieval-mode chroma
 ```
 
 ## Experimental Early-Exit Probing
@@ -296,9 +316,33 @@ python experiments/hf_probe_smoke.py --model distilgpt2 --prompt "/debug GPU tra
 
 Without trained probe weights, the backend exposes hidden states and returns an `untrained_probe` decision. With a JSON linear-probe weights file, it can score the selected hidden-state vector against a confidence threshold.
 
+The repo also includes a trained synthetic probe fixture for pipeline validation:
+
+```bash
+python experiments/train_probe_fixture.py
+python experiments/evaluate_probe_fixture.py
+```
+
+See `docs/probe_evaluation_report.md` for the generated evaluation report. This fixture uses text features so it runs quickly in CI; it is not presented as a hidden-state result.
+
+## vLLM Gateway Example
+
+vLLM can run as an OpenAI-compatible local gateway, so the harness uses `OpenAICompatibleBackend`:
+
+```bash
+docker compose -f docker-compose.vllm.yml up
+MODEL_BACKEND=openai_compatible \
+OPENAI_COMPAT_BASE_URL=http://localhost:8001/v1 \
+OPENAI_COMPAT_MODEL=sideboard-tech-model \
+OPENAI_COMPAT_API_KEY=local-dev-token \
+uvicorn app.main:app --reload
+```
+
+See `docs/vllm_gateway_config.md` for details.
+
 ## Limitations
 
-- The bundled wiki is synthetic and intentionally small.
+- The bundled wiki is synthetic and intentionally modest in size.
 - Keyword search is the stable v1 retrieval mode.
 - The persistent vector index is lightweight and dependency-free, not a production vector database.
 - The Hugging Face probe backend exposes hidden states, but a useful early-exit classifier still requires trained probe weights and validation.
@@ -312,10 +356,14 @@ Without trained probe weights, the backend exposes hidden states and returns an 
 - Benchmark fixtures for repeated RAG and debug-routing trials.
 - Hugging Face probe-aware backend that can expose hidden states.
 - Screenshots and API examples from a running local demo.
+- Trained probe fixture and evaluation report.
+- Chroma vector database adapter behind the same retrieval interface.
+- vLLM-specific backend configuration example.
+- Expanded synthetic technician corpus for stress testing.
 
 ## Next Roadmap
 
-- Add a trained probe fixture and evaluation report.
-- Add a real vector database adapter behind the same retrieval interface.
-- Add a vLLM-specific backend configuration example.
-- Expand the synthetic technician corpus for stress testing.
+- Train a true hidden-state classifier with held-out probe activations.
+- Add a production embedding model path for Chroma.
+- Add retrieval-quality metrics beyond route accuracy.
+- Add a minimal web UI for live technician workflow demos.

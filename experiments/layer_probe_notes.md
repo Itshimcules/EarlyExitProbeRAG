@@ -34,6 +34,17 @@ python experiments/hf_probe_smoke.py --model distilgpt2 --prompt "/debug GPU tra
 
 Without trained probe weights, the backend exposes hidden states but returns an `untrained_probe` decision instead of pretending to classify tool intent.
 
+## Trained Fixture
+
+The repo includes a small trained synthetic probe fixture in `experiments/probe_fixtures/`.
+
+```bash
+python experiments/train_probe_fixture.py
+python experiments/evaluate_probe_fixture.py
+```
+
+The fixture uses transparent text features to validate scoring, thresholds, false-positive/false-negative reporting, and report generation. It is deliberately not a hidden-state benchmark; it is a safe pipeline check before replacing fixture features with activation vectors from `HuggingFaceProbeAwareBackend`.
+
 ## Metrics To Track
 
 - baseline_tool_call_latency_ms
