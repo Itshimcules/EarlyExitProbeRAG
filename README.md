@@ -1,5 +1,9 @@
 # Probe-Aware Tool Harness
 
+[![tests](https://github.com/Itshimcules/EarlyExitProbeRAG/actions/workflows/tests.yml/badge.svg)](https://github.com/Itshimcules/EarlyExitProbeRAG/actions/workflows/tests.yml)
+[![Python](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+
 A backend-agnostic Python harness for local AI workflows that routes commands, calls MCP wiki tools, retrieves technician documentation, and benchmarks normal tool-call generation against early-exit routing strategies.
 
 This project explores local/private AI tooling for technician and operations workflows. It uses synthetic wiki/SOP documents to demonstrate safe internal knowledge retrieval, command-based output modes, and measurable local model performance.
